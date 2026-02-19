@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Andy Curtis <contactandyc@gmail.com>
+// SPDX-FileCopyrightText: 2025-2026 Andy Curtis <contactandyc@gmail.com>
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef _ajson_sax_H

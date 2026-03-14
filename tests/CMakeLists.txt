@@ -18,6 +18,8 @@ find_library(M_LIB m)
 set(TEST_EXECUTABLES "")
 add_executable(test_ajson_sax  src/test_ajson_sax.c)
 
+target_include_directories(test_ajson_sax PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 list(APPEND TEST_EXECUTABLES test_ajson_sax)
 
 set_target_properties(test_ajson_sax PROPERTIES
@@ -58,6 +60,8 @@ endif()
 
 add_test(NAME test_ajson_sax COMMAND $<TARGET_FILE:test_ajson_sax>)
 add_executable(test_ajson_string_utils  src/test_ajson_string_utils.c)
+
+target_include_directories(test_ajson_string_utils PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 list(APPEND TEST_EXECUTABLES test_ajson_string_utils)
 

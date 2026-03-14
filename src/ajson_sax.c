@@ -19,11 +19,16 @@
 
 #define AJSON_SPACE_CASE 32 : case 9 : case 13 : case 10
 
-int ajson_sax_parse(char *p, char *ep,
+
+/* The internal template. The compiler will inline this into the two wrappers
+   below, entirely optimizing away the `if (!destructive)` checks! */
+static inline __attribute__((always_inline)) int ajson_sax_parse_impl(
+                    char *p, char *ep,
                     const ajson_sax_cb_t *initial_cb,
                     aml_pool_t *pool,
                     void *ctx,
-                    char **error_at) {
+                    char **error_at,
+                    bool destructive) {
 
     /* --- Context Setup --- */
     ajson_sax_t sax;
@@ -111,7 +116,9 @@ get_end_of_key:;
 
     if (sax.cb.on_key) CHECK_CB(sax.cb.on_key(ctx, &sax, stringp, p - stringp));
 
-    *p = '\"'; /* FIX: Restore closing quote */
+    if (!destructive) {
+        *p = '\"'; /* Restore closing quote */
+    }
     p++;
     while (p < ep && *p != ':') p++;
     p++;
@@ -207,7 +214,9 @@ keyed_start_string:;
     *p = 0;
     if (sax.cb.on_string) CHECK_CB(sax.cb.on_string(ctx, &sax, stringp, p - stringp));
 
-    *p = '\"'; /* FIX: Restore closing quote */
+    if (!destructive) {
+        *p = '\"'; /* Restore closing quote */
+    }
     p++;
     ch = *p;
 
@@ -245,7 +254,10 @@ keyed_next_digit:;
     }
     p--; *p = 0;
     if (sax.cb.on_number) CHECK_CB(sax.cb.on_number(ctx, &sax, stringp, p - stringp));
-    *p = ch; /* Restore delimiter */
+
+    if (!destructive) {
+        *p = ch; /* Restore delimiter */
+    }
     goto look_for_key;
 
 keyed_decimal_number:;
@@ -261,7 +273,10 @@ keyed_decimal_number:;
     }
     p--; *p = 0;
     if (sax.cb.on_number) CHECK_CB(sax.cb.on_number(ctx, &sax, stringp, p - stringp));
-    *p = ch; /* Restore delimiter */
+
+    if (!destructive) {
+        *p = ch; /* Restore delimiter */
+    }
     goto look_for_key;
 
 start_value:;
@@ -370,7 +385,9 @@ start_string:;
     *p = 0;
     if (sax.cb.on_string) CHECK_CB(sax.cb.on_string(ctx, &sax, stringp, p - stringp));
 
-    *p = '\"'; /* FIX: Restore closing quote */
+    if (!destructive) {
+        *p = '\"'; /* Restore closing quote */
+    }
     p++;
     ch = *p;
 
@@ -418,7 +435,10 @@ next_digit:;
     }
     p--; *p = 0;
     if (sax.cb.on_number) CHECK_CB(sax.cb.on_number(ctx, &sax, stringp, p - stringp));
-    *p = ch; /* Restore delimiter */
+
+    if (!destructive) {
+        *p = ch; /* Restore delimiter */
+    }
     goto add_string;
 
 decimal_number:;
@@ -434,7 +454,10 @@ decimal_number:;
     }
     p--; *p = 0;
     if (sax.cb.on_number) CHECK_CB(sax.cb.on_number(ctx, &sax, stringp, p - stringp));
-    *p = ch; /* Restore delimiter */
+
+    if (!destructive) {
+        *p = ch; /* Restore delimiter */
+    }
     goto add_string;
 
 determine_next_step:
@@ -450,4 +473,20 @@ determine_next_step:
     }
 
     SAX_ERROR;
+}
+
+/* ========================================================================
+ * PUBLIC API WRAPPERS
+ * ======================================================================== */
+
+int ajson_sax_parse(char *p, char *ep,
+                    const ajson_sax_cb_t *initial_cb,
+                    aml_pool_t *pool, void *ctx, char **error_at) {
+    return ajson_sax_parse_impl(p, ep, initial_cb, pool, ctx, error_at, false);
+}
+
+int ajson_sax_parse_destructive(char *p, char *ep,
+                                const ajson_sax_cb_t *initial_cb,
+                                aml_pool_t *pool, void *ctx, char **error_at) {
+    return ajson_sax_parse_impl(p, ep, initial_cb, pool, ctx, error_at, true);
 }

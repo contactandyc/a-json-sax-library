@@ -63,6 +63,17 @@ int ajson_sax_parse(char *p, char *ep,
                     void *ctx,
                     char **error_at);
 
+/* * Destructive Parse Function (Maximum Speed / Zero-Copy).
+ * - Modifies 'p' in-place by dropping NUL terminators over quotes.
+ * - DOES NOT RESTORE THEM. The JSON buffer is destroyed.
+ * - Callbacks receive valid C-strings that can be saved directly.
+ */
+int ajson_sax_parse_destructive(char *p, char *ep,
+                                const ajson_sax_cb_t *initial_cb,
+                                aml_pool_t *pool,
+                                void *ctx,
+                                char **error_at);
+
 /* * Stack Operations
  * Use these inside your callbacks (e.g., inside on_start_object).
  */

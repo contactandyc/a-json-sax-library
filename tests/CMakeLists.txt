@@ -16,11 +16,24 @@ option(A_ENABLE_COVERAGE "Enable code coverage instrumentation" OFF)
 
 find_library(M_LIB m)
 
-# ---- Test executables ----
-set(TEST_EXECUTABLES "")
-add_executable(test_ajson_sax  src/test_ajson_sax.c)
+find_package(a_memory_library CONFIG REQUIRED)
+find_package(the_macro_library CONFIG REQUIRED)
 
-target_include_directories(test_ajson_sax PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+# Fallback for standalone test builds (when not included via add_subdirectory)
+if(NOT TARGET a_json_sax_library::a_json_sax_library)
+  find_package(a_json_sax_library CONFIG REQUIRED)
+endif()
+
+set(TEST_EXECUTABLES "")
+
+# ---- Targets ----
+add_executable(test_ajson_sax
+  src/test_ajson_sax.c
+)
+
+target_include_directories(test_ajson_sax PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src
+)
 
 list(APPEND TEST_EXECUTABLES test_ajson_sax)
 
@@ -35,9 +48,8 @@ if("CXX" IN_LIST CMAKE_PROJECT_LANGUAGES)
   )
 endif()
 
-if(NOT TARGET a_json_sax_library::a_json_sax_library)
-  find_package(a_json_sax_library CONFIG REQUIRED)
-endif()
+target_link_libraries(test_ajson_sax PRIVATE a_memory_library::a_memory_library)
+target_link_libraries(test_ajson_sax PRIVATE the_macro_library::the_macro_library)
 target_link_libraries(test_ajson_sax PRIVATE a_json_sax_library::a_json_sax_library)
 
 if(M_LIB)
@@ -61,9 +73,13 @@ if(A_ENABLE_COVERAGE)
 endif()
 
 add_test(NAME test_ajson_sax COMMAND $<TARGET_FILE:test_ajson_sax>)
-add_executable(test_ajson_string_utils  src/test_ajson_string_utils.c)
+add_executable(test_ajson_string_utils
+  src/test_ajson_string_utils.c
+)
 
-target_include_directories(test_ajson_string_utils PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(test_ajson_string_utils PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src
+)
 
 list(APPEND TEST_EXECUTABLES test_ajson_string_utils)
 
@@ -78,9 +94,8 @@ if("CXX" IN_LIST CMAKE_PROJECT_LANGUAGES)
   )
 endif()
 
-if(NOT TARGET a_json_sax_library::a_json_sax_library)
-  find_package(a_json_sax_library CONFIG REQUIRED)
-endif()
+target_link_libraries(test_ajson_string_utils PRIVATE a_memory_library::a_memory_library)
+target_link_libraries(test_ajson_string_utils PRIVATE the_macro_library::the_macro_library)
 target_link_libraries(test_ajson_string_utils PRIVATE a_json_sax_library::a_json_sax_library)
 
 if(M_LIB)

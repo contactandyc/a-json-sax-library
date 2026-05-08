@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(a_json_sax_library
-  VERSION 0.1.7
+  VERSION 0.1.8
   LANGUAGES C
 )
 
